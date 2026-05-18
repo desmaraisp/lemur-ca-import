@@ -15,6 +15,7 @@ jobs:
     permissions:
       contents: read
       actions: write
+      pull-requests: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -26,16 +27,24 @@ jobs:
 
       - name: Install test dependencies
         run: |
+          sudo apt-get update
+          sudo apt-get install libsasl2-dev libldap2-dev xvfb
+          python -m venv ~/env
+          source ~/env/bin/activate
           python -m pip install --upgrade pip
+          python -m pip install --upgrade setuptools
           python -m pip install --upgrade build
           python -m pip install .
           python -m pip install -e '.[tests]'
 
       - name: Run tests
-        run: python -m pytest
+        run: |
+          source ~/env/bin/activate
+          python -m pytest
 
       - name: Build package
         run: |
+          source ~/env/bin/activate
           python -m build
 
       - name: Upload build artifacts
@@ -50,7 +59,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const runUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`
-            const body = `✅ Build complete for PR #${process.env.PR_NUMBER}\n\nArtifacts are available from this workflow run:\n- [View run and download artifacts](${runUrl})\n\nThe package version used for this build is \\`${process.env.CA_IMPORTER_VERSION}\\`.`
+            const body = `✅ Build complete for PR #${process.env.PR_NUMBER}\n\nArtifacts are available from this workflow run:\n- [View run and download artifacts](${runUrl})\n\nThe package version used for this build is \\\`${process.env.CA_IMPORTER_VERSION}\\\`.`
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
