@@ -11,7 +11,7 @@ jobs:
     - name: Validate version vs prerelease flag
       run: |
         VERSION="${{ github.event.release.tag_name }}"
-        
+
         # Remove leading 'v' if present
         if [[ "$VERSION" == v* ]]; then
           VERSION="${VERSION:1}"
@@ -39,7 +39,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
-          python-version: "3.11"
+          python-version: "3.13"
 
       - name: Install test dependencies
         run: |
@@ -50,7 +50,9 @@ jobs:
         run: python -m pytest
 
   build:
-    needs: test
+    needs:
+      - test
+      - validate-tag-format
     runs-on: ubuntu-latest
     permissions:
       contents: read
