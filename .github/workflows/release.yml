@@ -98,6 +98,9 @@ jobs:
         with:
           name: release-dist
           path: dist/*
+          overwrite: true
+          retention-days: 1
+
 
   publish:
     needs: build
