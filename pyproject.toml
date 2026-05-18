@@ -3,7 +3,7 @@ requires = ["setuptools >= 70", "build>=1.5.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "lemur_ca_importer"
+name = "lemur-ca-import"
 dynamic = ["version"]
 authors = [
   { name = "Philippe Desmarais", email = "philippe.desmarais4@gmail.com" },
