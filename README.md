@@ -7,7 +7,7 @@ A [Lemur](https://github.com/netflix/lemur) plugin that allows users to import e
 Install from PyPI:
 
 ```bash
-pip install lemur-ca-importer
+pip install lemur-ca-import
 ```
 
 Or from source in development mode:
