@@ -49,14 +49,14 @@ class CAImporterPlugin(lemur_cryptography.CryptographyIssuerPlugin):
         )
 
         plugin_options = get_plugin_options(options)
-        public_cert = get_option(plugin_options, "public_certificate")
+        cert_pem = get_option(plugin_options, "public_certificate")
         private_key = get_option(plugin_options, "private_key")
 
         roles = [
             {"username": "", "password": "", "name": options["name"] + "_admin"},
             {"username": "", "password": "", "name": options["name"] + "_operator"},
         ]
-        return public_cert, private_key, None, roles
+        return cert_pem, private_key, None, roles
 
 def get_plugin_options(options):
     plugin_options = options.get("plugin", {}).get("plugin_options")

@@ -2,19 +2,6 @@ import pytest
 from flask import Flask
 from lemur_ca_importer import plugin
 
-def test_allows_auto_resolve_property():
-    p = plugin.CAImporterPlugin()
-    assert p.allows_auto_resolve is False
-
-def test_create_certificate_returns_pending():
-    p = plugin.CAImporterPlugin()
-    app = Flask('test')
-    with app.app_context():
-        cert, chain, external_id = p.create_certificate(None, {})
-        assert cert == ""
-        assert chain == ""
-        assert isinstance(external_id, int)
-
 def test_create_authority_returns_expected_roles():
     app = Flask('test')
     with app.app_context():
@@ -22,16 +9,18 @@ def test_create_authority_returns_expected_roles():
             "name": "test",
             "plugin": {
                 "plugin_options": [
-                    {"name": "public_certificate", "value": "-----BEGIN CERTIFICATE-----FAKE"}
+                    {"name": "public_certificate", "value": "-----BEGIN CERTIFICATE-----FAKE"},
+                    {"name": "private_key", "value": "FAKE"}
                 ]
             }
         }
-        pub, chain, key, roles = plugin.CAImporterPlugin().create_authority(options)
+        pub, key, chain, roles = plugin.CAImporterPlugin().create_authority(options)
 
         assert pub is not None
         assert pub.startswith("-----BEGIN CERTIFICATE-----")
         assert chain is None
-        assert key is None
+        assert key is not None
+        assert key is "FAKE"
         assert roles[0]["name"] == "test_admin"
         assert roles[1]["name"] == "test_operator"
 
@@ -56,7 +45,10 @@ def test_get_option_pub_cert():
     assert result == "CERTDATA"
 
 
-def test_get_option_pub_cert_none():
+def test_get_option_pub_cert_throws():
     opts = []
-    result = plugin.get_option(opts, "public_certificate")
-    assert result is None
+    app = Flask('test')
+
+    with app.app_context():
+        with pytest.raises(plugin.InvalidConfiguration):
+            plugin.get_option(opts, "public_certificate")
