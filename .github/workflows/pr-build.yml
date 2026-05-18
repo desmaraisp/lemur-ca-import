@@ -52,6 +52,8 @@ jobs:
         with:
           name: ${{ env.ARTIFACT_PREFIX }}-dist
           path: dist/*
+          overwrite: true
+          retention-days: 7
 
       - name: Post PR comment with artifact link
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
