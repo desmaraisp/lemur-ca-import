@@ -30,8 +30,7 @@ ca_importer = "lemur_ca_importer.plugin:CAImporterPlugin"
 
 [project.optional-dependencies]
 tests = [
-    "pytest",
-    "setuptools"
+    "pytest"
 ]
 
 [tool.pytest.ini_options]
