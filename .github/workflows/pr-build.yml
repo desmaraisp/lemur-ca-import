@@ -9,7 +9,7 @@ jobs:
   test-and-build:
     runs-on: ubuntu-latest
     env:
-      CA_IMPORTER_VERSION: "0.0.0.postpr${{ github.event.pull_request.number }}"
+      CA_IMPORTER_VERSION: "0.0.0.a${{ github.event.pull_request.number }}"
       ARTIFACT_PREFIX: "pr-${{ github.event.pull_request.number }}"
       PR_NUMBER: ${{ github.event.pull_request.number }}
     permissions:
