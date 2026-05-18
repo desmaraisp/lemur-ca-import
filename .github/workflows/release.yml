@@ -5,6 +5,29 @@ on:
     types: [published]
 
 jobs:
+  validate-tag-format:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Validate version vs prerelease flag
+      run: |
+        VERSION="${{ github.event.release.tag_name }}"
+        
+        # Remove leading 'v' if present
+        if [[ "$VERSION" == v* ]]; then
+          VERSION="${VERSION:1}"
+        fi
+
+        if [[ "${{ github.event.release.prerelease }}" == "true" ]]; then
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(a|b|rc)[0-9]+$ ]]; then
+            echo "GitHub release marked prerelease, but version is not a valid PEP440 prerelease"
+            exit 1
+          fi
+        else
+          if [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(a|b|rc)[0-9]+$ ]]; then
+            echo "Stable release cannot use prerelease version"
+            exit 1
+          fi
+        fi
   test:
     runs-on: ubuntu-latest
     permissions:
