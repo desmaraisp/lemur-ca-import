@@ -25,27 +25,20 @@ jobs:
         with:
           python-version: "3.13"
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+
       - name: Install test dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install libsasl2-dev libldap2-dev xvfb
-          python -m venv ~/env
-          source ~/env/bin/activate
-          python -m pip install --upgrade pip
-          python -m pip install --upgrade setuptools
-          python -m pip install --upgrade build
-          python -m pip install .
-          python -m pip install -e '.[tests]'
+          uv sync --all-packages --all-groups --frozen
 
       - name: Run tests
         run: |
-          source ~/env/bin/activate
-          python -m pytest
+          uv run python -m pytest
 
       - name: Build package
         run: |
-          source ~/env/bin/activate
-          python -m build
+          uv build --all-packages
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
