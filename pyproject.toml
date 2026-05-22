@@ -1,36 +1,20 @@
-[build-system]
-requires = ["setuptools >= 70", "build>=1.5.0"]
-build-backend = "setuptools.build_meta"
-
 [project]
-name = "lemur-ca-import"
-dynamic = ["version"]
-authors = [
-  { name = "Philippe Desmarais", email = "philippe.desmarais4@gmail.com" },
+name = "lemur-plugins-workspace"
+version = "0.0.1"
+requires-python = ">=3.10"
+
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = [
+    "src/*"
 ]
-dependencies = ["lemur>=1.7.0", "flask>=2.3.0"]
-description = "A plugin for Lemur that allows users to import existing CA certificates into the system."
-readme = "README.md"
-requires-python = ">=3.9"
-classifiers = [
-  "Programming Language :: Python :: 3",
-  "Operating System :: OS Independent",
-]
-license = "MIT"
-license-files = ["LICEN[CS]E*"]
 
-[project.urls]
-Homepage = "https://github.com/desmaraisp/lemur-ca-import"
-Issues = "https://github.com/desmaraisp/lemur-ca-import/issues"
-
-
-[project.entry-points."lemur.plugins"]
-ca_importer = "lemur_ca_importer.plugin:CAImporterPlugin"
-
-
-[project.optional-dependencies]
-tests = [
-    "pytest","setuptools"
+[dependency-groups]
+dev = [
+    "pytest",
+    "setuptools>=65.0.0"
 ]
 
 [tool.pytest.ini_options]

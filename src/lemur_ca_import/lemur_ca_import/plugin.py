@@ -3,16 +3,18 @@ from typing import Tuple
 from flask import current_app
 
 from lemur.common.utils import check_validation
-from lemur.exceptions import InvalidConfiguration
 from lemur.plugins.lemur_cryptography import plugin as lemur_cryptography
-import lemur_ca_importer
+import lemur_ca_import as lemur_ca_import
+from lemur_plugin_utils.utils import get_option, get_plugin_options
 
 
 class CAImporterPlugin(lemur_cryptography.CryptographyIssuerPlugin):
     title = "CA Importer"
     slug = "ca-importer"
     description = "Enables the import of existing CA certificates into Lemur."
-    version = lemur_ca_importer.VERSION
+    version = lemur_ca_import.VERSION
+    author = lemur_ca_import.AUTHOR
+    author_url = lemur_ca_import.URL
 
     options = [
         {
@@ -33,8 +35,6 @@ class CAImporterPlugin(lemur_cryptography.CryptographyIssuerPlugin):
         }
     ]
 
-    author = lemur_ca_importer.AUTHOR
-    author_url = lemur_ca_importer.URL
 
     @staticmethod
     def create_authority(options) -> Tuple[str, str, None, list]:
@@ -57,21 +57,3 @@ class CAImporterPlugin(lemur_cryptography.CryptographyIssuerPlugin):
             {"username": "", "password": "", "name": options["name"] + "_operator"},
         ]
         return cert_pem, private_key, None, roles
-
-def get_plugin_options(options):
-    plugin_options = options.get("plugin", {}).get("plugin_options")
-    if not plugin_options:
-        error = f"Invalid options for ca importer plugin: {options}"
-        current_app.logger.error(error)
-        raise InvalidConfiguration(error)
-    return plugin_options
-
-def get_option(plugin_options, option_name) -> str:
-    for option in plugin_options:
-        if option.get("name") == option_name:
-            return option.get("value")
-
-    error = f"Invalid options for ca importer plugin: {option_name}"
-    current_app.logger.error(error)
-    raise InvalidConfiguration(error)
-
