@@ -18,7 +18,7 @@ class CAImporterPlugin(lemur_cryptography.CryptographyIssuerPlugin):
 
     options = [
         {
-            "name": "public_certificate",
+            "name": "Public Certificate",
             "type": "textarea",
             "default": "",
             "required": True,
@@ -26,7 +26,7 @@ class CAImporterPlugin(lemur_cryptography.CryptographyIssuerPlugin):
             "helpMessage": "External CA public certificate in PEM format. This is used to build the certificate chain and is required when creating an authority.",
         },
         {
-            "name": "private_key",
+            "name": "Private Key",
             "type": "textarea",
             "default": "",
             "required": True,
@@ -49,8 +49,8 @@ class CAImporterPlugin(lemur_cryptography.CryptographyIssuerPlugin):
         )
 
         plugin_options = get_plugin_options(options)
-        cert_pem = get_option(plugin_options, "public_certificate")
-        private_key = get_option(plugin_options, "private_key")
+        cert_pem = get_option(plugin_options, "Public Certificate")
+        private_key = get_option(plugin_options, "Private Key")
 
         roles = [
             {"username": "", "password": "", "name": options["name"] + "_admin"},

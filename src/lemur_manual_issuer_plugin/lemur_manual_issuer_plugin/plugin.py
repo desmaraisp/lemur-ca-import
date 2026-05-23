@@ -53,7 +53,7 @@ class ManualIssuerPlugin(IssuerPlugin):
         )
 
         plugin_options = get_plugin_options(options)
-        public_cert = get_option(plugin_options, "public_certificate")
+        public_cert = get_option(plugin_options, "Public Certificate")
 
         roles = [
             {"username": "", "password": "", "name": options["name"] + "_admin"},
