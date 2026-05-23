@@ -17,4 +17,4 @@ runs:
       shell: bash
       run: |
         sudo apt install -y --no-install-recommends python3-dev libpq-dev build-essential libssl-dev libffi-dev libsasl2-dev libldap2-dev
-        uv sync --all-packages --all-groups --locked
+        uv sync --all-packages --all-groups
