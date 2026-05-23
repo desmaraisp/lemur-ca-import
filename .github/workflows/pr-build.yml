@@ -9,52 +9,44 @@ jobs:
   test-and-build:
     runs-on: ubuntu-latest
     env:
-      CA_IMPORTER_VERSION: "0.0.0.a${{ github.event.pull_request.number }}"
-      ARTIFACT_PREFIX: "pr-${{ github.event.pull_request.number }}"
-      PR_NUMBER: ${{ github.event.pull_request.number }}
+      PLUGINS_VERSION: "0.0.0.a${{ github.event.pull_request.number }}"
     permissions:
-      contents: read
       actions: write
-      pull-requests: write
+      contents: read
+    outputs:
+      plugins-version: ${{ env.PLUGINS_VERSION }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-
-      - name: Set up Python
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
-          python-version: "3.13"
+          fetch-depth: 0
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+      - name: Set up dependencies
+        uses: ./.github/actions/setup-deps
 
-      - name: Install test dependencies
-        run: |
-          uv sync --all-packages --all-groups --frozen
-
-      - name: Run tests
-        run: |
-          uv run python -m pytest
-
-      - name: Build package
-        run: |
-          uv build --all-packages
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      - name: Build, test and upload artifact
+        uses: ./.github/actions/build-and-upload
         with:
-          name: ${{ env.ARTIFACT_PREFIX }}-dist
-          path: dist/*
-          overwrite: true
+          version-number: ${{ env.PLUGINS_VERSION }}
           retention-days: 7
 
+  comment-artifact-link:
+    needs: test-and-build
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    env:
+      PLUGINS_VERSION: ${{ needs.test-and-build.outputs.plugins-version }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+
+    steps:
       - name: Post PR comment with artifact link
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const runUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`
-            const body = `✅ Build complete for PR #${process.env.PR_NUMBER}\n\nArtifacts are available from this workflow run:\n- [View run and download artifacts](${runUrl})\n\nThe package version used for this build is \\\`${process.env.CA_IMPORTER_VERSION}\\\`.`
+            const body = `✅ Build complete for PR #${process.env.PR_NUMBER}\n\nArtifacts are available from this workflow run:\n- [View run and download artifacts](${runUrl})\n\nThe package version used for this build is \\\`${process.env.PLUGINS_VERSION}\\\`.`
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,

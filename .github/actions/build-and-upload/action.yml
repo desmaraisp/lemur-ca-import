@@ -1,0 +1,35 @@
+name: 'Build and Upload Artifact'
+
+description: 'Builds the plugin artifact and uploads it to the workflow for use in other steps'
+
+inputs:
+  version-number:
+    description: 'The version number to use for the build'
+    required: true
+  retention-days:
+    description: 'The number of days to retain the artifact (default: 7)'
+    required: false
+    default: '7'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Build package
+      shell: bash
+      env:
+        VERSION: ${{ inputs.version-number }}
+      run: |
+        uv version --package lemur_ca_import $VERSION
+        uv version --package lemur_manual_issuer_plugin $VERSION
+        uv version --package lemur_plugin_utils $VERSION
+        uv add --package lemur_ca_import "lemur_plugin_utils==$VERSION"
+        uv add --package lemur_manual_issuer_plugin "lemur_plugin_utils==$VERSION"
+        uv build --all-packages
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: ${{inputs.version-number}}
+        path: dist/*
+        overwrite: true
+        retention-days: ${{ inputs.retention-days }}

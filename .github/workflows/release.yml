@@ -6,6 +6,8 @@ on:
 
 jobs:
   validate-tag-format:
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     steps:
     - name: Validate version vs prerelease flag
@@ -28,78 +30,27 @@ jobs:
             exit 1
           fi
         fi
-  test:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-
-      - name: Set up Python
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
-        with:
-          python-version: "3.13"
-
-      - name: Install test dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install libsasl2-dev libldap2-dev xvfb
-          python -m venv ~/env
-          source ~/env/bin/activate
-          python -m pip install --upgrade pip
-          python -m pip install --upgrade setuptools
-          python -m pip install --upgrade build
-          python -m pip install .
-          python -m pip install -e '.[tests]'
-
-      - name: Run tests
-        run: |
-          source ~/env/bin/activate
-          python -m pytest
-
   build:
     needs:
-      - test
       - validate-tag-format
     runs-on: ubuntu-latest
     permissions:
-      contents: read
       actions: write
-    env:
-      CA_IMPORTER_VERSION: ${{ github.event.release.tag_name }}
+      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-
-      - name: Set up Python
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
-          python-version: "3.13"
+          fetch-depth: 0
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+      - name: Set up dependencies
+        uses: ./.github/actions/setup-deps
 
-      - name: Install test dependencies
-        run: |
-          uv sync --all-packages --all-groups --frozen
-
-      - name: Run tests
-        run: |
-          uv run python -m pytest
-
-      - name: Build package
-        run: |
-          uv build --all-packages
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      - name: Build, test and upload artifact
+        uses: ./.github/actions/build-and-upload
         with:
-          name: release-dist
-          path: dist/*
-          overwrite: true
+          version-number: ${{ github.event.release.tag_name }}
           retention-days: 1
-
 
   publish:
     needs: build
@@ -114,7 +65,7 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
-          name: release-dist
+          name: ${{ github.event.release.tag_name }}
           path: dist/
 
       - name: Publish to PyPI
