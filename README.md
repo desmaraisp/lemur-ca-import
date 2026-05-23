@@ -1,64 +1,39 @@
-# lemur-ca-import
+# lemur-plugins
 
-A [Lemur](https://github.com/netflix/lemur) plugin that allows users to import existing CA certificates into the system, which can then be used to issue certificates without interacting with remote systems.
+This repo contains two different [Lemur](https://github.com/netflix/lemur) plugins:
 
-## Installation
+- `lemur-ca-import`: allows users to import existing CA certificates into Lemur, which can then be used to issue certificates without interacting with remote systems. Useful if you want to migrate your internal CA to Lemur without disrupting your current process.
 
-Install from PyPI:
+- `lemur-manual-issuer-plugin`: allows lemur to issue CSRs for certificates which can't be renewed automatically. The plugin then allows you to import the CA's response to complete the cert, after which point the certificate's lifecycle is managed by Lemur as usual. This is useful if you've got a legacy cert management process that requires sending CSRs to a third party CA owner which doesn't offer automated access
+
+## Usage
+
+Both plugins offer more specific documentation on installation and usage in their scoped README
+
+|   |   |   |
+|---|---|---|
+| lemur-ca-import | [docs](src/lemur_ca_import/README.md) | [package](https://pypi.org/project/lemur-ca-import/) |
+| lemur-manual-issuer-plugin | [docs](src/lemur_manual_issuer_plugin//README.md) | [package](https://pypi.org/project/lemur-manual-issuer-plugin/) |
+| lemur-plugin-utils | [docs](src/lemur_plugin_utils/README.md) | [package](https://pypi.org/project/lemur-plugin-utils/) |
+
+## Prerequisites
+
+This repo uses [mise](https://mise.jdx.dev/) and [uv](https://mise.jdx.dev/) to manage its dependencies. As such, you only need two commands to set up the project deps:
 
 ```bash
-pip install lemur-ca-import
-```
-
-Or from source in development mode:
-
-```bash
-pip install -e .
-```
-
-With test dependencies:
-
-```bash
-pip install -e '.[tests]'
+mise install
+uv sync --all-packages --all-groups
 ```
 
 ## Testing
 
-Run the test suite:
-
-```bash
-python -m pytest
-```
+A simple `uv run pytest` will run the tests across all packages.
 
 ## Building
 
-Build distributions locally:
-
-```bash
-python -m build
-```
-
-This generates both sdist and wheel in `dist/`.
-
-To control the package version, set the `CA_IMPORTER_VERSION` environment variable:
-
-```bash
-CA_IMPORTER_VERSION=1.2.3 python -m build
-```
+It's possible to manually build the packages with `uv build --all-packages`, but this won't set the various package versions properly. There's a bit of a trick to it, as both plugins depend on a core utils package, and the versions move in lockstep. That's why the repo builds a version of the packages on every PR to make testing a little easier.
 
 ## Publishing
 
-The package uses GitHub Actions for automated CI/CD:
-
-- **PR builds** (`.github/workflows/pr-build.yml`): Tests and builds on each PR targeting `main`. Artifacts are uploaded and linked in the PR.
-- **Release publishing** (`.github/workflows/release.yml`): Tests, builds, and publishes to PyPI on each GitHub release. Uses OIDC trusted publishing (no long-lived tokens).
-
-## Usage
-
-The `CAImporterPlugin` is registered as a Lemur issuer plugin via entry point `ca_importer`. Configure it in Lemur by providing:
-
-- **public_certificate**: External CA certificate in PEM format
-- **private_key**: External CA private key in PEM format
-
-The plugin creates an authority bound to the imported CA certificate and generates admin/operator roles.
+The package uses GitHub Actions for automated publishing to pypi.org. On every release, each package is automatically published with the release's version number. The plugins' dependencies are automatically updated to the current version.
 
